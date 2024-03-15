@@ -1,6 +1,6 @@
 {
     "idf.flashType": "UART",
-    "idf.port": "/dev/cu.SLAB_USBtoUART",
+    "idf.port": "/dev/cu.usbserial-0001",
     "idf.adapterTargetName": "esp32",
     "files.associations": {
         "cmath": "c",
@@ -18,6 +18,11 @@
         "gpio.h": "c",
         "regex": "c",
         "string": "c",
-        "sine_table.h": "c"
-    }
+        "sine_table.h": "c",
+        "comunication_manager.h": "c"
+    },
+    "idf.openOcdConfigs": [
+        "interface/ftdi/esp32_devkitj_v1.cfg",
+        "target/esp32.cfg"
+    ]
 }

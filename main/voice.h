@@ -20,3 +20,4 @@ struct Voice
 };
 
 void processVoice(struct Voice *voice);
+void noteOn(struct Voice *voice,uint8_t note);

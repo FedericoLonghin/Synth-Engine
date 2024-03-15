@@ -15,7 +15,7 @@ void processVoice(struct Voice *voice)
         voice->op[op_n].phase += TWO_PI * ((voice->freq * voice->op[op_n].freqMolt) / SAMPLE_RATE);
         if (voice->op[op_n].phase >= TWO_PI)
             voice->op[op_n].phase = 0;
-            
+
         voice->op[op_n].out = *(voice->op[op_n].inptr) * sineLookupTable[(int)(voice->op[op_n].phase * (sineLookupTable_size / TWO_PI))];
     }
 
@@ -31,4 +31,13 @@ void calcAlgoritmm()
     default:
         break;
     }
+}
+
+void noteOn(struct Voice *voice,uint8_t note)
+{
+    const char *TAG = "NoteOn";
+    voice->freq = note * 100;
+    voice->life_t = 0;
+    voice->phase = 0;
+    ESP_LOGI(TAG, "freq:%f", 2.0);
 }

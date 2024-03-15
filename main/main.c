@@ -10,6 +10,7 @@
 #include "esp_task_wdt.h"
 
 #include "i2s_manager.h"
+#include "comunication_manager.h"
 
 #include "voice.h"
 void audio_task();
@@ -25,6 +26,7 @@ void app_main(void)
   gpio_set_level(5, 0);
 
   i2s_init();
+  xTaskCreate(command_reciver, "command_reciver", 2048, NULL, 2, NULL);
   xTaskCreate(audio_task, "audioTask", 10000, NULL, 2, NULL);
   while (1)
   {
@@ -35,25 +37,60 @@ void app_main(void)
 
 void audio_task()
 {
+  struct command *cmd = malloc(sizeof(struct command));
   float onePtr = 1;
   const char *TAG = "audio_Task";
-  struct Voice *v1 = malloc(1);
-  v1->freq = 440;
-  v1->phase = 0;
-  v1->op[0].freqMolt = 1;
-  v1->op[1].freqMolt = 2;
-  v1->op[0].inptr = &onePtr;
-  v1->op[1].inptr = &v1->op[0].out;
+  struct Voice *vo1 = malloc(sizeof(struct Voice));
+  struct Voice *vo2 = malloc(sizeof(struct Voice));
+  struct Voice *voices[1];
+  voices[0] = vo1;
+  voices[0]->freq = 440;
+  voices[0]->phase = 0;
+  voices[0]->op[0].freqMolt = 0;
+  voices[0]->op[1].freqMolt = 1;
+  voices[0]->op[0].inptr = &onePtr;
+  // voices[0]->op[1].inptr = &voices[0]->op[0]->out;
+  voices[0]->op[1].inptr = &onePtr;
+
+  while (cmd_queue_handle == 0)
+  {
+    vTaskDelay(1); // wait for queue to be created
+  }
 
   while (1)
   {
+    if (xQueueReceive(cmd_queue_handle, (cmd), 0))
+    {
+      ESP_LOGI(TAG, "CMD in queue");
+      printf("cmd add: %d\n", (uint8_t)cmd->cmd);
+      switch (cmd->cmd)
+      {
+      case 'N': // NoteOn
+        ESP_LOGI(TAG, "Case N");
+        // uint8_t voice_n = 0;
+        // voices[0]->freq = 880;
+        noteOn(voices[0], cmd->val);
+
+        break;
+      default:
+        break;
+      }
+    }
+
     if (fillBufferREQ)
     {
       gpio_set_level(5, 1);
+      uint16_t lev = 0;
       for (int i = 0; i < outBuff_size; i++)
       {
-        processVoice(v1);
-        outBuffer_toFill[i] = (v1->out) * 0xFFF;
+        lev = 0;
+        for (int i = 0; i < N_VOICES; i++)
+        {
+
+          processVoice(voices[i]);
+          lev += (voices[i]->out) * 0xFFF;
+        }
+        outBuffer_toFill[i] = lev;
         // printf("%d\n", outBuffer_toFill[i]);
       }
       // ESP_LOGE(TAG, "buffer filled");
