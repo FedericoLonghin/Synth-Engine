@@ -1,0 +1,20 @@
+{
+    "idf.flashType": "UART",
+    "idf.port": "/dev/cu.SLAB_USBtoUART",
+    "idf.adapterTargetName": "esp32",
+    "files.associations": {
+        "cmath": "c",
+        "complex": "c",
+        "locale": "c",
+        "stdlib.h": "c",
+        "stdint.h": "c",
+        "task.h": "c",
+        "i2s_std.h": "c",
+        "i2s_types.h": "c",
+        "sdkconfig.h": "c",
+        "i2s_manager.h": "c",
+        "iqmathlib.h": "c",
+        "voice.h": "c",
+        "gpio.h": "c"
+    }
+}
