@@ -35,13 +35,16 @@ void app_main(void)
 
 void audio_task()
 {
+  float onePtr = 1;
   const char *TAG = "audio_Task";
   struct Voice *v1 = malloc(1);
   v1->freq = 440;
   v1->phase = 0;
-  struct Voice *v2 = malloc(1);
-  v2->freq = 880;
-  v2->phase = 0;
+  v1->op[0].freqMolt = 1;
+  v1->op[1].freqMolt = 2;
+  v1->op[0].inptr = &onePtr;
+  v1->op[1].inptr = &v1->op[0].out;
+
   while (1)
   {
     if (fillBufferREQ)
@@ -50,8 +53,7 @@ void audio_task()
       for (int i = 0; i < outBuff_size; i++)
       {
         processVoice(v1);
-        // processVoice(v2);
-        outBuffer_toFill[i] = (v1->out ) * 0xFFF;
+        outBuffer_toFill[i] = (v1->out) * 0xFFF;
         // printf("%d\n", outBuffer_toFill[i]);
       }
       // ESP_LOGE(TAG, "buffer filled");

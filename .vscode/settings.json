@@ -17,6 +17,7 @@
         "voice.h": "c",
         "gpio.h": "c",
         "regex": "c",
-        "string": "c"
+        "string": "c",
+        "sine_table.h": "c"
     }
 }

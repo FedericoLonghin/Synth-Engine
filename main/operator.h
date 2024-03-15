@@ -14,8 +14,11 @@
 struct Operator
 {
     float in;
+    float *inptr;
     float out;
 
+    float freqMolt;
+    float phase;
     struct Envelope env;
     float env_level;
 };
