@@ -7,6 +7,7 @@
 #include "driver/gpio.h"
 #include "esp_check.h"
 #include "sdkconfig.h"
+#include "esp_task_wdt.h"
 
 #include "i2s_manager.h"
 
@@ -20,6 +21,9 @@ void app_main(void)
 
   printf("Synth Engine V-1.0\n");
 
+  gpio_set_direction(5, GPIO_MODE_OUTPUT);
+  gpio_set_level(5, 0);
+
   i2s_init();
   xTaskCreate(audio_task, "audioTask", 10000, NULL, 2, NULL);
   while (1)
@@ -32,21 +36,34 @@ void app_main(void)
 void audio_task()
 {
   const char *TAG = "audio_Task";
-  struct Voice *v = malloc(1);
+  struct Voice *v1 = malloc(1);
+  v1->freq = 440;
+  v1->phase = 0;
+  struct Voice *v2 = malloc(1);
+  v2->freq = 880;
+  v2->phase = 0;
   while (1)
   {
-
     if (fillBufferREQ)
     {
+      gpio_set_level(5, 1);
       for (int i = 0; i < outBuff_size; i++)
       {
-        processVoice(v);
+        processVoice(v1);
+        // processVoice(v2);
+        outBuffer_toFill[i] = (v1->out ) * 0xFFF;
+        // printf("%d\n", outBuffer_toFill[i]);
       }
-
-      ESP_LOGE(TAG, "buffer filled");
+      // ESP_LOGE(TAG, "buffer filled");
       bufferFilled = true;
+
+      fillBufferREQ = false;
     }
-    vTaskDelay(1);
+    else
+    {
+      gpio_set_level(5, 0);
+      // vTaskDelay(1);
+    }
   }
   vTaskDelete(NULL);
 }

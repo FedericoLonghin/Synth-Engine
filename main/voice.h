@@ -13,6 +13,8 @@
 struct Voice
 {
     float out;
+    float phase;
+    float freq;
     uint8_t life_t;
     struct Operator op[N_OPERATORS];
 };

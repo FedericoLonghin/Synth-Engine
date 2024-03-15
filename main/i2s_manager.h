@@ -15,8 +15,10 @@ void i2s_write_task(void *args);
 void i2s_init();
 
 #define outBuff_size 441
-extern int16_t outBuff_A[outBuff_size];
-extern int16_t outBuff_B[outBuff_size];
+extern uint8_t outBuff_A[outBuff_size * 2];
+extern uint8_t outBuff_B[outBuff_size * 2];
+// extern uint16_t outBuff_A[outBuff_size];
+// extern uint16_t outBuff_B[outBuff_size];
 extern bool fillBufferREQ;
 extern bool bufferFilled;
-extern int16_t *outBuffer_toFill;
+extern uint16_t *outBuffer_toFill;
