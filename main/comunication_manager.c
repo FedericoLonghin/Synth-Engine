@@ -25,18 +25,26 @@ void command_reciver(void *args)
     ESP_LOGI(TAG, "uart:%d", uart_enable_rx_intr(UART_PORT_NUM));
     while (1)
     {
-        if (uart_read_bytes(UART_PORT_NUM, serialBuff, 3, 10))
+        if (uart_read_bytes(UART_PORT_NUM, serialBuff, 8, 10))
         {
             gpio_set_level(5, 1);
 
             // ESP_LOGI(TAG, "Recived from Serial: %d %d", serialBuff[0], serialBuff[1]);
             if (serialBuff[0] == MIDI_Note_On || serialBuff[0] == MIDI_Note_Off)
             {
-
+                printf("aaa");
                 struct command cmd = {
                     .cmd = serialBuff[0],
                     .val = serialBuff[1]};
                 xQueueSend(cmd_queue_handle, &cmd, 100);
+            }
+            else if (serialBuff[0] == MIDI_Set_Param)
+            {
+                ESP_LOGI(TAG, "recived param");
+                ESP_LOGI(TAG, "val: %02x %02x %02x %02x", serialBuff[1], serialBuff[2], serialBuff[3], serialBuff[4]);
+                uint32_t rawVal = (serialBuff[1] << 24 | serialBuff[2] << 16 | serialBuff[3] << 8 | serialBuff[4]);
+                float *val = (float *)&rawVal;
+                ESP_LOGI(TAG, "val: %f ", *val);
             }
             gpio_set_level(5, 0);
         }

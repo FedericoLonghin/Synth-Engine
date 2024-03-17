@@ -30,7 +30,7 @@ void app_main(void)
 
   i2s_init();
   xTaskCreate(command_reciver, "command_reciver", 2048, NULL, configMAX_PRIORITIES, NULL);
-  xTaskCreate(audio_task, "audioTask", 10000, NULL, 2, NULL);
+  xTaskCreate(audio_task, "audioTask", 10000, NULL, 5, NULL);
   while (1)
   {
     vTaskDelay(100);
@@ -68,7 +68,7 @@ void audio_task()
     voices[vo_n].op[0].env.Decay = 4410;
     voices[vo_n].op[0].env.Sustain = 1.0f;
     voices[vo_n].op[0].env.Release = 4410;
-    voices[vo_n].op[1].env.Attack = 410;
+    voices[vo_n].op[1].env.Attack = 0;
     voices[vo_n].op[1].env.Decay = 4410;
     voices[vo_n].op[1].env.Sustain = 0.2f;
     voices[vo_n].op[1].env.Release = 4410;
