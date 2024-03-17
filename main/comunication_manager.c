@@ -28,7 +28,7 @@ void command_reciver(void *args)
         if (uart_read_bytes(UART_PORT_NUM, serialBuff, serialBuff_len, 10))
         {
             // ESP_LOGI(TAG, "Recived from Serial: %s", serialBuff);
-            serialBuff[1] -= '0';
+            // serialBuff[1] -= '0';
             switch (serialBuff[0])
             {
             case 'N':
@@ -36,6 +36,15 @@ void command_reciver(void *args)
                 {
                     struct command cmd = {
                         .cmd = 'N',
+                        .val = serialBuff[1]};
+                    xQueueSend(cmd_queue_handle, &cmd, 0);
+                }
+                break;
+            case 'O':
+                if (serialBuff[1] < 10)
+                {
+                    struct command cmd = {
+                        .cmd = 'O',
                         .val = serialBuff[1]};
                     xQueueSend(cmd_queue_handle, &cmd, 0);
                 }

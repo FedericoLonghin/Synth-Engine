@@ -21,5 +21,6 @@ struct Operator
     float phase;
     struct Envelope env;
     float env_level;
+    float amplCoeff;
 };
 void processOperator(struct Operator *operator);

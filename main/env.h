@@ -2,7 +2,7 @@
 typedef enum
 {
     ATT,
-    DECa,
+    DEC,
     SUS,
     REL,
     OFF

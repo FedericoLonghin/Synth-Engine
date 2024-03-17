@@ -47,15 +47,18 @@ void audio_task()
   voices[0] = vo1;
   voices[0]->freq = 440;
   voices[0]->life_t = 0;
-  voices[0]->op[0].freqMolt = 1;
-  voices[0]->op[1].freqMolt = 2;
+  voices[0]->op[0].freqMolt = 2;
+  voices[0]->op[1].freqMolt = 1;
   voices[0]->op[0].inptr = &zeroPtr;
   voices[0]->op[1].inptr = &voices[0]->op[0].out;
 
+  voices[0]->op[0].amplCoeff = 0.1;
+  voices[0]->op[1].amplCoeff = 1;
   voices[0]->op[0].phase = voices[0]->op[1].phase = 0;
-  voices[0]->op[0].env.Attack = voices[0]->op[1].env.Attack = 44100;
-  voices[0]->op[0].env.Decay = voices[0]->op[1].env.Decay = 44100;
-  voices[0]->op[0].env.Sustain = voices[0]->op[1].env.Sustain = 0.8f;
+  voices[0]->op[0].env.Attack = voices[0]->op[1].env.Attack = 4410;
+  voices[0]->op[0].env.Decay = voices[0]->op[1].env.Decay = 4410;
+  voices[0]->op[0].env.Sustain = 1.0f;
+  voices[0]->op[1].env.Sustain = 1.0f;
   voices[0]->op[0].env.Release = voices[0]->op[1].env.Release = 44100;
   voices[0]->op[0].env.fase = voices[0]->op[1].env.fase = ATT;
 
@@ -68,6 +71,7 @@ void audio_task()
 
   while (1)
   {
+    // Commands reciver
     if (xQueueReceive(cmd_queue_handle, (cmd), 0))
     {
       ESP_LOGI(TAG, "CMD in queue");
@@ -76,10 +80,12 @@ void audio_task()
       {
       case 'N': // NoteOn
         ESP_LOGI(TAG, "Case N");
-        // uint8_t voice_n = 0;
-        // voices[0]->freq = 880;
         noteOn(voices[0], cmd->val);
 
+        break;
+      case 'O': // NoteOff
+        ESP_LOGI(TAG, "Case O");
+        noteOff(voices[0]);
         break;
       default:
         break;

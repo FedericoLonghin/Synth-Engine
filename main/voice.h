@@ -21,4 +21,5 @@ struct Voice
 
 void processVoice(struct Voice *voice);
 void noteOn(struct Voice *voice, uint8_t note);
-float getEnvelope_ampl(struct Envelope *env, uint32_t *time);
+void noteOff(struct Voice *voice);
+float getEnvelope_ampl(struct Envelope *env, uint32_t time);
