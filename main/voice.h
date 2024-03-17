@@ -7,11 +7,13 @@
 #include "driver/gpio.h"
 #include "esp_check.h"
 #include "sdkconfig.h"
+#include "math.h"
 
 #include "config.h"
 #include "operator.h"
 struct Voice
 {
+    uint8_t note;
     float out;
     float phase;
     float freq;

@@ -23,7 +23,7 @@ void processVoice(struct Voice *voice)
             ESP_LOGE(TAG, "ampl OOR positive");
         //       output     = |            input           | * |                            Oscillator                                       | * |env|
         // voice->op[op_n].out = (*(voice->op[op_n].inptr) + 1) * sineLookupTable[(int)(voice->op[op_n].phase * (sineLookupTable_size / TWO_PI))] * ampl;
-        voice->op[op_n].out = sineLookupTable[(int)((*(voice->op[op_n].inptr) + 1) * voice->op[op_n].phase * (sineLookupTable_size / TWO_PI))%sineLookupTable_size] * ampl;
+        voice->op[op_n].out = sineLookupTable[(int)((*(voice->op[op_n].inptr) + 1) * voice->op[op_n].phase * (sineLookupTable_size / TWO_PI)) % sineLookupTable_size] * ampl;
     }
 
     voice->out = voice->op[N_OPERATORS - 1].out;
@@ -45,7 +45,8 @@ void calcAlgoritmm()
 void noteOn(struct Voice *voice, uint8_t note)
 {
     const char *TAG = "NoteOn";
-    voice->freq = note * 100;
+    voice->note = note;
+    voice->freq = 440 * pow(2, ((note - 69) / 12.0f));
     voice->life_t = 0;
     voice->op[0].env.fase = ATT;
     voice->op[1].env.fase = ATT;
@@ -73,7 +74,7 @@ float getEnvelope_ampl(struct Envelope *env, uint32_t time)
         {
             env->fase = DEC;
             time = 0;
-            ESP_LOGI(TAG, "SETTING DEC");
+            // ESP_LOGI(TAG, "SETTING DEC");
         }
 
         return (uint32_t)time / (float)env->Attack;
@@ -83,7 +84,7 @@ float getEnvelope_ampl(struct Envelope *env, uint32_t time)
 
         if (time >= env->Decay + env->Attack)
         {
-            ESP_LOGI(TAG, "setting SUS");
+            // ESP_LOGI(TAG, "setting SUS");
             env->Release_StartVal = env->Sustain;
             env->fase = SUS;
         }
@@ -98,7 +99,7 @@ float getEnvelope_ampl(struct Envelope *env, uint32_t time)
         env->Release_StartVal -= (1 / (float)env->Release);
         if (env->Release_StartVal <= 0)
         {
-            ESP_LOGI(TAG, "setting OFF");
+            // ESP_LOGI(TAG, "setting OFF");
             env->fase = OFF;
             return 0;
         }
