@@ -37,20 +37,29 @@ void app_main(void)
 
 void audio_task()
 {
+  struct Voice *voices[1];
   struct command *cmd = malloc(sizeof(struct command));
-  float onePtr = 1;
+  float zeroPtr = 0;
   const char *TAG = "audio_Task";
   struct Voice *vo1 = malloc(sizeof(struct Voice));
   struct Voice *vo2 = malloc(sizeof(struct Voice));
-  struct Voice *voices[1];
+
   voices[0] = vo1;
   voices[0]->freq = 440;
-  voices[0]->phase = 0;
-  voices[0]->op[0].freqMolt = 0;
-  voices[0]->op[1].freqMolt = 1;
-  voices[0]->op[0].inptr = &onePtr;
-  // voices[0]->op[1].inptr = &voices[0]->op[0]->out;
-  voices[0]->op[1].inptr = &onePtr;
+  voices[0]->life_t = 0;
+  voices[0]->op[0].freqMolt = 1;
+  voices[0]->op[1].freqMolt = 2;
+  voices[0]->op[0].inptr = &zeroPtr;
+  voices[0]->op[1].inptr = &voices[0]->op[0].out;
+
+  voices[0]->op[0].phase = voices[0]->op[1].phase = 0;
+  voices[0]->op[0].env.Attack = voices[0]->op[1].env.Attack = 44100;
+  voices[0]->op[0].env.Decay = voices[0]->op[1].env.Decay = 44100;
+  voices[0]->op[0].env.Sustain = voices[0]->op[1].env.Sustain = 0.8f;
+  voices[0]->op[0].env.Release = voices[0]->op[1].env.Release = 44100;
+  voices[0]->op[0].env.fase = voices[0]->op[1].env.fase = ATT;
+
+  // voices[0]->op[1].inptr = &zeroPtr;
 
   while (cmd_queue_handle == 0)
   {

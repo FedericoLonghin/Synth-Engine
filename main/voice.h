@@ -15,9 +15,10 @@ struct Voice
     float out;
     float phase;
     float freq;
-    uint8_t life_t;
+    uint32_t life_t;
     struct Operator op[N_OPERATORS];
 };
 
 void processVoice(struct Voice *voice);
-void noteOn(struct Voice *voice,uint8_t note);
+void noteOn(struct Voice *voice, uint8_t note);
+float getEnvelope_ampl(struct Envelope *env, uint32_t *time);

@@ -1,8 +1,19 @@
 #pragma once
+typedef enum
+{
+    ATT,
+    DECa,
+    SUS,
+    REL,
+    OFF
+} EnvelopeFase;
+
 struct Envelope
 {
-    int Attack;
-    int Decay;
-    int Sustain;
-    int Release;
+    uint32_t Attack;
+    uint32_t Decay;
+    float Sustain;
+    uint32_t Release;
+    float Release_StartVal;
+    EnvelopeFase fase;
 };

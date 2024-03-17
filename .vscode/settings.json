@@ -19,7 +19,8 @@
         "regex": "c",
         "string": "c",
         "sine_table.h": "c",
-        "comunication_manager.h": "c"
+        "comunication_manager.h": "c",
+        "__locale": "c"
     },
     "idf.openOcdConfigs": [
         "interface/ftdi/esp32_devkitj_v1.cfg",
