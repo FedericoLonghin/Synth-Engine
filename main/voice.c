@@ -45,9 +45,12 @@ void calcAlgoritmm()
 void noteOn(struct Voice *voice, uint8_t note)
 {
     const char *TAG = "NoteOn";
+    ESP_LOGI(TAG,"note: %d",note);
     voice->note = note;
-    voice->freq = 440 * pow(2, ((note - 69) / 12.0f));
+    voice->freq = 440 * pow(2, ((note - 81) / 12.0f));
     voice->life_t = 0;
+    voice->op[0].phase = 0;
+    voice->op[1].phase = 0;
     voice->op[0].env.fase = ATT;
     voice->op[1].env.fase = ATT;
 
