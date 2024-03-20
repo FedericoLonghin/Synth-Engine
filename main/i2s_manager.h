@@ -10,11 +10,11 @@
 
 #include "esp_check.h"
 #include "sdkconfig.h"
+#include "config.h"
 
 void i2s_write_task(void *args);
 void i2s_init();
 
-#define outBuff_size 256
 extern uint8_t outBuff_A[outBuff_size * 2];
 extern uint8_t outBuff_B[outBuff_size * 2];
 // extern uint16_t outBuff_A[outBuff_size];

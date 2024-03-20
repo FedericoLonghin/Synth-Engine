@@ -2,8 +2,10 @@
 
 #define N_VOICES 4
 #define N_OPERATORS 2
-#define SAMPLE_RATE 22050
+#define SAMPLE_RATE 44100
 #define TWO_PI 6.283185f
+#define outBuff_size 512
+
 
 // GPIOs
 #define I2S_LCK 19

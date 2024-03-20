@@ -56,7 +56,7 @@ void audio_task()
     voices[vo_n].op[0].inptr = &zeroPtr;
     voices[vo_n].op[1].inptr = &voices[vo_n].op[0].out;
 
-    voices[vo_n].op[0].amplCoeff = 0.4;
+    voices[vo_n].op[0].amplCoeff = 0;
     voices[vo_n].op[1].amplCoeff = 1;
 
     voices[vo_n].op[0].phase = voices[vo_n].op[1].phase = 0;
