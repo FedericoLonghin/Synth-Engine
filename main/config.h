@@ -1,6 +1,6 @@
 #pragma once
 
-#define N_VOICES 5
+#define N_VOICES 8
 #define N_OPERATORS 2
 #define SAMPLE_RATE 44100
 #define TWO_PI 6.283185f

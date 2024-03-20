@@ -1,22 +1,54 @@
 #include "voice.h"
 #include "sine_table.h"
-void processVoices(struct Voice *voices[],uint16_t samples)
+void processVoices(struct Voice *voice, uint16_t samples)
 {
+    float ampl[N_VOICES][N_OPERATORS] = {0};
     uint16_t lev = 0;
-    for (int i = 0; i < outBuff_size; i++)
+    for (int sa_n = 0; sa_n < samples; sa_n++)
     {
         lev = 0;
-        for (int i = 0; i < N_VOICES; i++)
+        for (int vo_n = 0; vo_n < N_VOICES; vo_n++)
         {
+            const char *TAG = "processVoice";
+            if (voice[vo_n].life_t == 0)
+            {
+                ESP_LOGI(TAG, "life=0");
+            }
+            // Calcolating operators contribute
+            for (int op_n = 0; op_n < N_OPERATORS; op_n++)
+            {
+                // Calcolating phase
+                voice[vo_n].op[op_n].phase += TWO_PI * ((voice[vo_n].freq * voice[vo_n].op[op_n].freqMolt) / SAMPLE_RATE);
+                if (voice[vo_n].op[op_n].phase >= TWO_PI)
+                    voice[vo_n].op[op_n].phase = 0;
 
-            processVoice(&voices[i]);
-            lev += (voices[i]->out) * 0xFFF;
+                // Calcolating envelope ampl
+                if (sa_n % 10 == 0)
+                {
+                    ampl[vo_n][op_n] = getEnvelope_ampl(&voice[vo_n].op[op_n].env, (voice[vo_n].life_t)) * voice[vo_n].op[op_n].amplCoeff;
+                    if (ampl[vo_n][op_n] < 0)
+                        ESP_LOGE(TAG, "ampl OOR negative");
+                    if (ampl[vo_n][op_n] > 1)
+                        ESP_LOGE(TAG, "ampl OOR positive");
+                }
+
+                //       output     = |            input           | * |                            Oscillator                                       | * |env|
+                // voice[vo_n].op[op_n].out = (*(voice[vo_n].op[op_n].inptr) + 1) * sineLookupTable[(int)(voice[vo_n].op[op_n].phase * (sineLookupTable_size / TWO_PI))] * ampl;
+                voice[vo_n].op[op_n].out = sineLookupTable[(int)((*(voice[vo_n].op[op_n].inptr) + 1) * voice[vo_n].op[op_n].phase * (sineLookupTable_size / TWO_PI)) % sineLookupTable_size] * ampl[vo_n][op_n];
+            }
+
+            voice[vo_n].out = voice[vo_n].op[N_OPERATORS - 1].out;
+            // Updating note life
+            voice[vo_n].life_t++;
+
+            lev += (voice[vo_n].out) * 0xFFF;
         }
-        outBuffer_toFill[i] = lev;
-        // printf("%d\n", outBuffer_toFill[i]);
+        outBuffer_toFill[sa_n] = lev;
+        // printf("%d\n", outBuffer_toFill[sa_n]);
     }
 }
-//deprecated
+
+// deprecated
 void processVoice(struct Voice *voice)
 {
     const char *TAG = "processVoice";

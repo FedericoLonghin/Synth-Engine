@@ -39,7 +39,7 @@ void app_main(void)
 }
 void audio_task()
 {
-struct Voice *voices = malloc(N_VOICES * sizeof(struct Voice));
+  struct Voice *voices = malloc(N_VOICES * sizeof(struct Voice));
   // *voices = malloc(N_VOICES * sizeof(struct Voice));
   command *cmd = malloc(sizeof(command));
   float zeroPtr = 0;
@@ -133,11 +133,10 @@ struct Voice *voices = malloc(N_VOICES * sizeof(struct Voice));
     if (fillBufferREQ)
     {
       gpio_set_level(5, 1);
-      processVoices(voices,outBuff_size);
-
+      processVoices(voices, outBuff_size);
+      // printf("val:%ld\n", voices[0].life_t);
       // ESP_LOGE(TAG, "buffer filled");
       bufferFilled = true;
-
       fillBufferREQ = false;
     }
     else
