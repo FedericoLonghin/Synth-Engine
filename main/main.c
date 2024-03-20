@@ -37,10 +37,10 @@ void app_main(void)
   }
   return;
 }
-
 void audio_task()
 {
-  struct Voice *voices = malloc(N_VOICES * sizeof(struct Voice));
+struct Voice *voices = malloc(N_VOICES * sizeof(struct Voice));
+  // *voices = malloc(N_VOICES * sizeof(struct Voice));
   command *cmd = malloc(sizeof(command));
   float zeroPtr = 0;
   const char *TAG = "audio_Task";
@@ -51,12 +51,12 @@ void audio_task()
   {
     voices[vo_n].freq = 0;
     voices[vo_n].life_t = 0;
-    voices[vo_n].op[0].freqMolt = 2;
+    voices[vo_n].op[0].freqMolt = 9;
     voices[vo_n].op[1].freqMolt = 1;
     voices[vo_n].op[0].inptr = &zeroPtr;
     voices[vo_n].op[1].inptr = &voices[vo_n].op[0].out;
 
-    voices[vo_n].op[0].amplCoeff = 0;
+    voices[vo_n].op[0].amplCoeff = 0.1;
     voices[vo_n].op[1].amplCoeff = 1;
 
     voices[vo_n].op[0].phase = voices[vo_n].op[1].phase = 0;
@@ -64,11 +64,11 @@ void audio_task()
 
     voices[vo_n].op[0].env.Attack = 44100;
     voices[vo_n].op[0].env.Decay = 44100;
-    voices[vo_n].op[0].env.Sustain = 0.0f;
+    voices[vo_n].op[0].env.Sustain = 0.2f;
     voices[vo_n].op[0].env.Release = 0;
     voices[vo_n].op[1].env.Attack = 0;
     voices[vo_n].op[1].env.Decay = 4410;
-    voices[vo_n].op[1].env.Sustain = 0.2f;
+    voices[vo_n].op[1].env.Sustain = 0.3f;
     voices[vo_n].op[1].env.Release = 4410;
   }
 
@@ -133,19 +133,8 @@ void audio_task()
     if (fillBufferREQ)
     {
       gpio_set_level(5, 1);
-      uint16_t lev = 0;
-      for (int i = 0; i < outBuff_size; i++)
-      {
-        lev = 0;
-        for (int i = 0; i < N_VOICES; i++)
-        {
+      processVoices(voices,outBuff_size);
 
-          processVoice(&voices[i]);
-          lev += (voices[i].out) * 0xFFF;
-        }
-        outBuffer_toFill[i] = lev;
-        // printf("%d\n", outBuffer_toFill[i]);
-      }
       // ESP_LOGE(TAG, "buffer filled");
       bufferFilled = true;
 

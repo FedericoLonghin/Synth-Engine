@@ -1,5 +1,22 @@
 #include "voice.h"
 #include "sine_table.h"
+void processVoices(struct Voice *voices[],uint16_t samples)
+{
+    uint16_t lev = 0;
+    for (int i = 0; i < outBuff_size; i++)
+    {
+        lev = 0;
+        for (int i = 0; i < N_VOICES; i++)
+        {
+
+            processVoice(&voices[i]);
+            lev += (voices[i]->out) * 0xFFF;
+        }
+        outBuffer_toFill[i] = lev;
+        // printf("%d\n", outBuffer_toFill[i]);
+    }
+}
+//deprecated
 void processVoice(struct Voice *voice)
 {
     const char *TAG = "processVoice";
@@ -45,7 +62,7 @@ void calcAlgoritmm()
 void noteOn(struct Voice *voice, uint8_t note)
 {
     const char *TAG = "NoteOn";
-    ESP_LOGI(TAG,"note: %d",note);
+    ESP_LOGI(TAG, "note: %d", note);
     voice->note = note;
     voice->freq = 440 * pow(2, ((note - 81) / 12.0f));
     voice->life_t = 0;

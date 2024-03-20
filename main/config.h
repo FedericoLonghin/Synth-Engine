@@ -1,10 +1,10 @@
 #pragma once
 
-#define N_VOICES 4
+#define N_VOICES 5
 #define N_OPERATORS 2
 #define SAMPLE_RATE 44100
 #define TWO_PI 6.283185f
-#define outBuff_size 512
+#define outBuff_size 1024
 
 
 // GPIOs

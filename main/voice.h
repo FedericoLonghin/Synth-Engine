@@ -9,6 +9,7 @@
 #include "sdkconfig.h"
 #include "math.h"
 
+#include "i2s_manager.h"
 #include "config.h"
 #include "operator.h"
 struct Voice
@@ -22,6 +23,7 @@ struct Voice
 };
 
 void processVoice(struct Voice *voice);
+void processVoices(struct Voice *voices[], uint16_t samples);
 void noteOn(struct Voice *voice, uint8_t note);
 void noteOff(struct Voice *voice);
 float getEnvelope_ampl(struct Envelope *env, uint32_t time);
