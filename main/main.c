@@ -56,7 +56,7 @@ void audio_task()
     voices[vo_n].op[0].inptr = &zeroPtr;
     voices[vo_n].op[1].inptr = &voices[vo_n].op[0].out;
 
-    voices[vo_n].op[0].amplCoeff = 0.1;
+    voices[vo_n].op[0].amplCoeff = 0.01;
     voices[vo_n].op[1].amplCoeff = 1;
 
     voices[vo_n].op[0].phase = voices[vo_n].op[1].phase = 0;
@@ -66,7 +66,7 @@ void audio_task()
     voices[vo_n].op[0].env.Decay = 44100;
     voices[vo_n].op[0].env.Sustain = 0.2f;
     voices[vo_n].op[0].env.Release = 0;
-    voices[vo_n].op[1].env.Attack = 0;
+    voices[vo_n].op[1].env.Attack = 100;
     voices[vo_n].op[1].env.Decay = 4410;
     voices[vo_n].op[1].env.Sustain = 0.3f;
     voices[vo_n].op[1].env.Release = 4410;
@@ -80,56 +80,76 @@ void audio_task()
   while (1)
   {
     // Commands reciver
-    if (xQueueReceive(cmd_queue_handle, (cmd), 0))
+    if (!fillBufferREQ)
     {
-      switch (cmd->cmd)
+
+      if (xQueueReceive(cmd_queue_handle, cmd, 0))
       {
-      case MIDI_Note_On: // NoteOn
-        voiceSelector++;
-        if (voiceSelector >= N_VOICES)
-          voiceSelector = 0;
-        noteOn(&voices[voiceSelector], cmd->val_uint8);
-        break;
-      case MIDI_Note_Off: // NoteOff
-        for (uint8_t vo_n = 0; vo_n < N_VOICES; vo_n++)
+        switch (cmd->cmd)
         {
-          if (voices[vo_n].note == cmd->val_uint8)
+        case MIDI_Note_On: // NoteOn
+          voiceSelector++;
+          if (voiceSelector >= N_VOICES)
+            voiceSelector = 0;
+          noteOn(&voices[voiceSelector], cmd->param1);
+          break;
+        case MIDI_Note_Off: // NoteOff
+          for (uint8_t vo_n = 0; vo_n < N_VOICES; vo_n++)
           {
-            noteOff(&voices[vo_n]);
+            if (voices[vo_n].note == cmd->param1)
+            {
+              noteOff(&voices[vo_n]);
+            }
           }
-        }
-        break;
-      case MIDI_Set_Env_Param:
-        ESP_LOGI(TAG, "MIDI_Set_Env_Param");
-        for (int vo_n = 0; vo_n < N_VOICES; vo_n++)
-        {
-          switch (cmd->param2)
+          break;
+        case MIDI_Set_Env_Param:
+          ESP_LOGI(TAG, "MIDI_Set_Env_Param");
+          for (int vo_n = 0; vo_n < N_VOICES; vo_n++)
           {
-          case Attack:
-            ESP_LOGI(TAG, " -Setted Op:%d Attack to: %f", cmd->param1, cmd->val_float);
-            voices[vo_n].op[cmd->param1].env.Attack = cmd->val_float;
-            break;
-          case Decay:
-            ESP_LOGI(TAG, "Setted Op:%d Decay to: %f", cmd->param1, cmd->val_float);
-            voices[vo_n].op[cmd->param1].env.Decay = cmd->val_float;
-            break;
-          case Sustain:
-            ESP_LOGI(TAG, "Setted Op:%d Sustain to: %f", cmd->param1, cmd->val_float);
-            voices[vo_n].op[cmd->param1].env.Sustain = cmd->val_float;
-            break;
-          case Release:
-            ESP_LOGI(TAG, "Setted Op:%d Release to: %f", cmd->param1, cmd->val_float);
-            voices[vo_n].op[cmd->param1].env.Release = cmd->val_float;
-            break;
+            switch (cmd->param2)
+            {
+            case Attack:
+              ESP_LOGI(TAG, " -Setted Op:%d Attack to: %d", cmd->param1 - 1, cmd->param3);
+              voices[vo_n].op[cmd->param1 - 1].env.Attack = cmd->param3 * 1000;
+              break;
+            case Decay:
+              ESP_LOGI(TAG, " -Setted Op:%d Decay to: %d", cmd->param1 - 1, cmd->param3);
+              voices[vo_n].op[cmd->param1 - 1].env.Decay = cmd->param3 * 1000;
+              break;
+            case Sustain:
+              ESP_LOGI(TAG, " -Setted Op:%d Sustain to: %f", cmd->param1 - 1, cmd->val_float);
+              voices[vo_n].op[cmd->param1 - 1].env.Sustain = cmd->val_float;
+              break;
+            case Release:
+              ESP_LOGI(TAG, " -Setted Op:%d Release to: %d", cmd->param1 - 1, cmd->param3);
+              voices[vo_n].op[cmd->param1 - 1].env.Release = cmd->param3 * 1000;
+              break;
+            }
           }
+          break;
+        case MIDI_Set_Op_Param:
+          ESP_LOGI(TAG, "MIDI_Set_Op_Param");
+          for (int vo_n = 0; vo_n < N_VOICES; vo_n++)
+          {
+            switch (cmd->param2)
+            {
+            case 1:
+              ESP_LOGI(TAG, " -Setted Op:%d Ampl to: %f", cmd->param1 - 1, cmd->val_float);
+              voices[vo_n].op[cmd->param1 - 1].amplCoeff = cmd->val_float;
+              break;
+            case 2:
+              ESP_LOGI(TAG, " -Setted Op:%d FreqMolt to: %f", cmd->param1 - 1, cmd->val_float);
+              voices[vo_n].op[cmd->param1 - 1].freqMolt = cmd->val_float;
+              break;
+            }
+          }
+          break;
+        default:
+          ESP_LOGE(TAG, "Unknow command %d", cmd->cmd);
+          break;
         }
-        break;
-      default:
-        ESP_LOGE(TAG, "Unknow command %d", cmd->cmd);
-        break;
       }
     }
-
     if (fillBufferREQ)
     {
       gpio_set_level(5, 1);

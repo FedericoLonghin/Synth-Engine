@@ -10,10 +10,6 @@ void processVoices(struct Voice *voice, uint16_t samples)
         for (int vo_n = 0; vo_n < N_VOICES; vo_n++)
         {
             const char *TAG = "processVoice";
-            if (voice[vo_n].life_t == 0)
-            {
-                ESP_LOGI(TAG, "life=0");
-            }
             // Calcolating operators contribute
             for (int op_n = 0; op_n < N_OPERATORS; op_n++)
             {
@@ -41,7 +37,7 @@ void processVoices(struct Voice *voice, uint16_t samples)
             // Updating note life
             voice[vo_n].life_t++;
 
-            lev += (voice[vo_n].out) * 0xFFF;
+            lev += (voice[vo_n].out) * 0xFFE;
         }
         outBuffer_toFill[sa_n] = lev;
         // printf("%d\n", outBuffer_toFill[sa_n]);
@@ -109,11 +105,13 @@ void noteOn(struct Voice *voice, uint8_t note)
 void noteOff(struct Voice *voice)
 {
     const char *TAG = "NoteOff";
-    voice->op[0].env.Release_StartVal = getEnvelope_ampl(&voice->op[0].env, voice->life_t);
-    voice->op[1].env.Release_StartVal = getEnvelope_ampl(&voice->op[0].env, voice->life_t);
+
+    for (int op_n = 0; op_n < N_OPERATORS; op_n++)
+    {
+        voice->op[op_n].env.Release_StartVal = getEnvelope_ampl(&voice->op[op_n].env, voice->life_t);
+        voice->op[op_n].env.fase = REL;
+    }
     voice->life_t = 0;
-    voice->op[0].env.fase = REL;
-    voice->op[1].env.fase = REL;
 }
 
 float getEnvelope_ampl(struct Envelope *env, uint32_t time)
@@ -127,6 +125,7 @@ float getEnvelope_ampl(struct Envelope *env, uint32_t time)
             env->fase = DEC;
             time = 0;
             // ESP_LOGI(TAG, "SETTING DEC");
+            return 1;
         }
 
         return (uint32_t)time / (float)env->Attack;

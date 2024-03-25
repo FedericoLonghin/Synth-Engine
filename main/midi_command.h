@@ -2,6 +2,7 @@
 #define MIDI_Note_On 144
 #define MIDI_Note_Off 128
 #define MIDI_Set_Env_Param 244
+#define MIDI_Set_Op_Param 245
 /*
 MIDI_Set_Env_Param command structure
 Byte: 0 244
@@ -14,10 +15,12 @@ Byte: 0 244
       7 float
 */
 
-typedef enum{
-Attack,
-Decay,
-Sustain,
-Release
+typedef enum
+{
+      off,
+      Attack,
+      Decay,
+      Sustain,
+      Release
 
-}Env_param;
+} Env_param;
