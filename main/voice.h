@@ -16,13 +16,13 @@ struct Voice
 {
     uint8_t note;
     float out;
-    float phase;
+
     float freq;
     uint32_t life_t;
     struct Operator op[N_OPERATORS];
+    bool isActive;
 };
 
-void processVoice(struct Voice *voice);
 void processVoices(struct Voice *voices, uint16_t samples);
 void noteOn(struct Voice *voice, uint8_t note);
 void noteOff(struct Voice *voice);

@@ -59,7 +59,6 @@ void i2s_write_task(void *args)
     else
         ESP_LOGI(TAG, "New channel enabled");
 
-    int i = 0;
     uint8_t bytes_written = 0;
 
     // initial
@@ -99,10 +98,6 @@ void i2s_write_task(void *args)
         {
             ESP_LOGE(TAG, "outBuffer_toFill val not recognized!");
         }
-
-        i++;
-        // printf("%d\n", i);
-        // vTaskDelay(1);
     }
     vTaskDelete(NULL);
 }

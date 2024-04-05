@@ -17,7 +17,6 @@
 
 #define MONO_VOICE 0
 void audio_task();
-int voiceSelector = 0;
 void app_main(void)
 {
   const char *TAG = "app_main";
@@ -49,27 +48,32 @@ void audio_task()
 
   for (int vo_n = 0; vo_n < N_VOICES; vo_n++)
   {
-    voices[vo_n].freq = 0;
-    voices[vo_n].life_t = 0;
-    voices[vo_n].op[0].freqMolt = 9;
-    voices[vo_n].op[1].freqMolt = 1;
-    voices[vo_n].op[0].inptr = &zeroPtr;
-    voices[vo_n].op[1].inptr = &voices[vo_n].op[0].out;
+    for (int op_n = 0; op_n < N_OPERATORS; op_n++)
+    {
 
-    voices[vo_n].op[0].amplCoeff = 0.01;
-    voices[vo_n].op[1].amplCoeff = 1;
+      voices[vo_n].isActive = false;
+      voices[vo_n].freq = 0;
+      voices[vo_n].life_t = 0;
+      voices[vo_n].op[0].freqMolt = 9;
+      voices[vo_n].op[1].freqMolt = 1;
+      voices[vo_n].op[0].inptr = &zeroPtr;
+      voices[vo_n].op[1].inptr = &voices[vo_n].op[0].out;
 
-    voices[vo_n].op[0].phase = voices[vo_n].op[1].phase = 0;
-    voices[vo_n].op[0].env.fase = voices[vo_n].op[1].env.fase = ATT;
+      voices[vo_n].op[0].amplCoeff = 1;
+      voices[vo_n].op[1].amplCoeff = 1;
 
-    voices[vo_n].op[0].env.Attack = 44100;
-    voices[vo_n].op[0].env.Decay = 44100;
-    voices[vo_n].op[0].env.Sustain = 0.2f;
-    voices[vo_n].op[0].env.Release = 0;
-    voices[vo_n].op[1].env.Attack = 100;
-    voices[vo_n].op[1].env.Decay = 4410;
-    voices[vo_n].op[1].env.Sustain = 0.3f;
-    voices[vo_n].op[1].env.Release = 4410;
+      voices[vo_n].op[0].phase = voices[vo_n].op[1].phase = 0;
+      voices[vo_n].op[0].env.fase = voices[vo_n].op[1].env.fase = ATT;
+
+      voices[vo_n].op[0].env.Attack = 44100;
+      voices[vo_n].op[0].env.Decay = 44100;
+      voices[vo_n].op[0].env.Sustain = 0.2f;
+      voices[vo_n].op[0].env.Release = 0;
+      voices[vo_n].op[1].env.Attack = 100;
+      voices[vo_n].op[1].env.Decay = 4410;
+      voices[vo_n].op[1].env.Sustain = 0.3f;
+      voices[vo_n].op[1].env.Release = 4410;
+    }
   }
 
   while (cmd_queue_handle == 0)
@@ -88,10 +92,16 @@ void audio_task()
         switch (cmd->cmd)
         {
         case MIDI_Note_On: // NoteOn
-          voiceSelector++;
-          if (voiceSelector >= N_VOICES)
-            voiceSelector = 0;
-          noteOn(&voices[voiceSelector], cmd->param1);
+
+          int vo_i = 0;
+          while (voices[vo_i].isActive && vo_i < N_VOICES)
+          {
+            vo_i++;
+          }
+          if (vo_i >= N_VOICES)
+            vo_i--;
+          ESP_LOGI(TAG, "NoteOn voice n.%d", vo_i);
+          noteOn(&voices[vo_i], cmd->param1);
           break;
         case MIDI_Note_Off: // NoteOff
           for (uint8_t vo_n = 0; vo_n < N_VOICES; vo_n++)
@@ -104,44 +114,58 @@ void audio_task()
           break;
         case MIDI_Set_Env_Param:
           ESP_LOGI(TAG, "MIDI_Set_Env_Param");
-          for (int vo_n = 0; vo_n < N_VOICES; vo_n++)
+
+          switch (cmd->param2)
           {
-            switch (cmd->param2)
+          case Attack:
+            ESP_LOGI(TAG, " -Setted Op:%d Attack to: %d", cmd->param1 - 1, cmd->param3);
+            for (int vo_n = 0; vo_n < N_VOICES; vo_n++)
             {
-            case Attack:
-              ESP_LOGI(TAG, " -Setted Op:%d Attack to: %d", cmd->param1 - 1, cmd->param3);
               voices[vo_n].op[cmd->param1 - 1].env.Attack = cmd->param3 * 1000;
-              break;
-            case Decay:
-              ESP_LOGI(TAG, " -Setted Op:%d Decay to: %d", cmd->param1 - 1, cmd->param3);
-              voices[vo_n].op[cmd->param1 - 1].env.Decay = cmd->param3 * 1000;
-              break;
-            case Sustain:
-              ESP_LOGI(TAG, " -Setted Op:%d Sustain to: %f", cmd->param1 - 1, cmd->val_float);
-              voices[vo_n].op[cmd->param1 - 1].env.Sustain = cmd->val_float;
-              break;
-            case Release:
-              ESP_LOGI(TAG, " -Setted Op:%d Release to: %d", cmd->param1 - 1, cmd->param3);
-              voices[vo_n].op[cmd->param1 - 1].env.Release = cmd->param3 * 1000;
-              break;
             }
+            break;
+          case Decay:
+            ESP_LOGI(TAG, " -Setted Op:%d Decay to: %d", cmd->param1 - 1, cmd->param3);
+            for (int vo_n = 0; vo_n < N_VOICES; vo_n++)
+            {
+              voices[vo_n].op[cmd->param1 - 1].env.Decay = cmd->param3 * 1000;
+            }
+            break;
+          case Sustain:
+            ESP_LOGI(TAG, " -Setted Op:%d Sustain to: %f", cmd->param1 - 1, cmd->val_float);
+            for (int vo_n = 0; vo_n < N_VOICES; vo_n++)
+            {
+              voices[vo_n].op[cmd->param1 - 1].env.Sustain = cmd->val_float;
+            }
+            break;
+          case Release:
+            ESP_LOGI(TAG, " -Setted Op:%d Release to: %d", cmd->param1 - 1, cmd->param3);
+            for (int vo_n = 0; vo_n < N_VOICES; vo_n++)
+            {
+              voices[vo_n].op[cmd->param1 - 1].env.Release = cmd->param3 * 1000;
+            }
+            break;
           }
           break;
         case MIDI_Set_Op_Param:
           ESP_LOGI(TAG, "MIDI_Set_Op_Param");
-          for (int vo_n = 0; vo_n < N_VOICES; vo_n++)
+
+          switch (cmd->param2)
           {
-            switch (cmd->param2)
+          case 1:
+            ESP_LOGI(TAG, " -Setted Op:%d Ampl to: %f", cmd->param1 - 1, cmd->val_float);
+            for (int vo_n = 0; vo_n < N_VOICES; vo_n++)
             {
-            case 1:
-              ESP_LOGI(TAG, " -Setted Op:%d Ampl to: %f", cmd->param1 - 1, cmd->val_float);
               voices[vo_n].op[cmd->param1 - 1].amplCoeff = cmd->val_float;
-              break;
-            case 2:
-              ESP_LOGI(TAG, " -Setted Op:%d FreqMolt to: %f", cmd->param1 - 1, cmd->val_float);
-              voices[vo_n].op[cmd->param1 - 1].freqMolt = cmd->val_float;
-              break;
             }
+            break;
+          case 2:
+            ESP_LOGI(TAG, " -Setted Op:%d FreqMolt to: %f", cmd->param1 - 1, cmd->val_float);
+            for (int vo_n = 0; vo_n < N_VOICES; vo_n++)
+            {
+              voices[vo_n].op[cmd->param1 - 1].freqMolt = cmd->val_float;
+            }
+            break;
           }
           break;
         default:
